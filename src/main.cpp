@@ -8,11 +8,11 @@
 #define TEMP_OFFSET_MULT  3.0f
 
 typedef enum {
-    TEMP_UNDEFINED = 0,
-    TEMP_LOW,       // <= 10 C
-    TEMP_NORMAL,    // <= 45 C
-    TEMP_HIGH,      // <= 55 C
-    TEMP_CRITICAL,  // > 55 C
+    TEMP_UNDEFINED = 0, // Error/undefined state
+    TEMP_LOW,           // <= 10 C
+    TEMP_NORMAL,        // <= 45 C
+    TEMP_HIGH,          // <= 55 C
+    TEMP_CRITICAL,      // > 55 C
 } temp_state_t;
 
 typedef enum {
@@ -35,7 +35,7 @@ typedef struct {
 } chip_config_t;
 static chip_config_t chip;
 
-// Estimate ambient temperature using the initial calibration
+// Estimate ambient temperature using initial calibration values
 static float estimate_ambient_temp(float chip_temp)
 {
     float delta = chip_temp - chip.initial_temp_chip;
@@ -60,7 +60,7 @@ static temp_state_t get_temp_state(float temp)
     return TEMP_CRITICAL;
 }
 
-// Get the relative RGB color
+// Get relative RGB color
 static color_t get_temp_color(temp_state_t state)
 {
     switch (state) {
@@ -72,7 +72,6 @@ static color_t get_temp_color(temp_state_t state)
     }
 }
 
-// Update the onboard RGB LED
 static void update_led(color_t color)
 {
     // Using bitwise operations to
