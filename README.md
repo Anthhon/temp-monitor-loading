@@ -18,5 +18,5 @@ O desafio se trata da criação de um sistema de monitoramento de temperatura, e
 - [X] Leitura inválida de temperatura
     - [X] Simular leitura inválida
     - [X] Alertar condição de falha
-- [ ] Definição de valores limites de temperatura
-    - [ ] Alterar em run-time (Opcional)
+- [X] Definição de valores limites de temperatura
+    - [X] Alterar em run-time (Opcional)
