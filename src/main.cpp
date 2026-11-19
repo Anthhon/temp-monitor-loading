@@ -7,6 +7,9 @@
 #define TEMP_OFFSET_FIXED 8.0f
 #define TEMP_OFFSET_MULT  3.0f
 
+#define TOUCH_BASELINE_GPIO_10 38000
+#define TOUCH_BASELINE_GPIO_7  35000
+
 typedef enum {
     TEMP_UNDEFINED = 0, // Error/undefined state
     TEMP_LOW,           // <= 10 C
@@ -32,8 +35,8 @@ typedef struct {
 
     // LED info
     color_t rgb_color;
-} chip_config_t;
-static chip_config_t chip;
+} chip_info_t;
+static chip_info_t chip;
 
 // Estimate ambient temperature using initial calibration values
 static float estimate_ambient_temp(float chip_temp)
@@ -86,12 +89,8 @@ static void update_led(color_t color)
 static float get_chip_temperature(void)
 {
     float temp = temperatureRead();
-    if (isnan(temp) || isinf(temp)) {
-
-        chip.temp_state = TEMP_UNDEFINED;
-        chip.rgb_color = PURPLE;
-        update_led(chip.rgb_color);
-
+    if (isnan(temp) || isinf(temp) ||
+            touchRead(14) > 24000) { // Error simulation using GPIO touch
         return 126.0f; // Temperature sensor has a range of -40ºC to 125ºC
     }
 
@@ -108,10 +107,11 @@ void setup(void)
     update_led(chip.rgb_color);
 
     // Get chip information.
-    Serial.println("Informacoes do chip...");
+    int flash_size = ESP.getFlashChipSize();
+
+    Serial.println("Informacoes do chip:");
     Serial.printf("Modelo do chip: %s\n", ESP.getChipModel());
-    Serial.printf("Flash: %u bytes\n", ESP.getFlashChipSize());
-    Serial.printf("PSRAM: %u bytes\n", ESP.getPsramSize());
+    Serial.printf("Flash: %.2fMB (%u bytes)\n", (float)flash_size / (1024.f * 1024.f), flash_size);
 
     // Initialize temperature sensing.
     Serial.println("Iniciando sensor de temperatura...");
@@ -131,6 +131,10 @@ void loop(void)
 {
     float new_temp_chip = get_chip_temperature();
     if (new_temp_chip == 126.0f) {
+        chip.temp_state = TEMP_UNDEFINED;
+        chip.rgb_color = PURPLE;
+        update_led(chip.rgb_color);
+
         Serial.println("Erro na leitura do sensor!");
         delay(5000);
         return;

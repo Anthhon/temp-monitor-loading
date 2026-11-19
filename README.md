@@ -9,14 +9,14 @@ O desafio se trata da criação de um sistema de monitoramento de temperatura, e
 - [X] Leituras periódicas do sensor de temperatura do aparelho
 - [X] Exibir os valores de temperatura lidos de maneira clara
     - [X] Monitor serial
-- [ ] Definição de valores limites de temperatura
-    - [ ] Alterar em run-time (Opcional)
 - [X] Estados relativos a temperatura do aparelho
     - [X] Falha/Indefinido
     - [X] Normal
     - [X] Alerta
     - [X] Crítico
     - [X] Exibir alterações de estados pelo led RGB 
-- [ ] Leitura inválida de temperatura
-    - [ ] Simular leitura inválida
+- [X] Leitura inválida de temperatura
+    - [X] Simular leitura inválida
     - [X] Alertar condição de falha
+- [ ] Definição de valores limites de temperatura
+    - [ ] Alterar em run-time (Opcional)
