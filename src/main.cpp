@@ -5,6 +5,7 @@
 
 #define LED_PIN 48
 
+#define HYSTERESIS_MARGIN   0.5f
 #define TEMP_OFFSET_FIXED 8.0f
 #define TEMP_OFFSET_MULT  3.0f
 
@@ -85,19 +86,38 @@ static bool get_chip_temperature(float *temp)
 // Determine temperature state
 static temp_state_t get_temp_state(float temp)
 {
-    if (isnan(temp) || isinf(temp))
-        return TEMP_UNDEFINED;
+    if (isnan(temp) || isinf(temp)) return TEMP_UNDEFINED;
 
-    if (temp <= chip.threshold_minimum)
-        return TEMP_LOW;
-
-    if (temp <= chip.threshold_average)
-        return TEMP_NORMAL;
-
-    if (temp <= chip.threshold_maximum)
-        return TEMP_HIGH;
+    if (temp <= chip.threshold_minimum) return TEMP_LOW;
+    if (temp <= chip.threshold_average) return TEMP_NORMAL;
+    if (temp <= chip.threshold_maximum) return TEMP_HIGH;
 
     return TEMP_CRITICAL;
+}
+
+// Stay in current state while temp inside its band widened by hysteresis margin
+static temp_state_t get_temp_state_hyst(float temp)
+{
+    switch (chip.temp_state) {
+        case TEMP_LOW:
+            if (temp <= chip.threshold_minimum + HYSTERESIS_MARGIN) return TEMP_LOW;
+            break;
+        case TEMP_NORMAL:
+            if (temp >  chip.threshold_minimum - HYSTERESIS_MARGIN &&
+                temp <= chip.threshold_average + HYSTERESIS_MARGIN) return TEMP_NORMAL;
+            break;
+        case TEMP_HIGH:
+            if (temp >  chip.threshold_average - HYSTERESIS_MARGIN &&
+                temp <= chip.threshold_maximum + HYSTERESIS_MARGIN) return TEMP_HIGH;
+            break;
+        case TEMP_CRITICAL:
+            if (temp >  chip.threshold_maximum - HYSTERESIS_MARGIN) return TEMP_CRITICAL;
+            break;
+        default:
+            break;
+    }
+
+    return get_temp_state(temp); // Error or undefined value
 }
 
 static color_t get_temp_color(temp_state_t state)
@@ -160,7 +180,7 @@ static bool get_threshold_button(gpio_id* button)
 static void print_temperature_thresholds(void)
 {
     Serial.printf("- Temperatura baixa <= %d | Temperatura normal <= %d | Temperatura alta <= %d > Temperatura crítica \n",
-                  chip.threshold_minimum, chip.threshold_average, chip.threshold_maximum, chip.threshold_maximum);
+                  chip.threshold_minimum, chip.threshold_average, chip.threshold_maximum);
 }
 
 // Increment a threshold while preserving its ordering
@@ -278,7 +298,7 @@ void loop(void)
     float temp_ambient_estimated = estimate_ambient_temp(new_temp_chip);
 
     // Update state using estimated ambient temperature
-    chip.temp_state = get_temp_state(temp_ambient_estimated);
+    chip.temp_state = get_temp_state_hyst(temp_ambient_estimated);
     chip.rgb_color = get_temp_color(chip.temp_state);
     update_led(chip.rgb_color);
 
