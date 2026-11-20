@@ -192,6 +192,6 @@ A **histerese** no entanto garante que cada estado mantém uma "margem de erro".
 
 ## Simulando uma leitura inválida
 
-Para demonstrar o tratamento de falha sem danificar nada, o pino **GPIO 7** faz o papel de "sensor com defeito": enquanto estiver tocado, a leitura é considerada inválida.
+Para demonstrar o tratamento de falha sem danificar nada, o pino **GPIO 7** força a simulação de um defeito enquanto estiver tocado, fazendo com que a leitura seja considerada inválida.
 
 > Se o GPIO 7 estiver tocado **durante o boot**, a leitura de calibração falha e o aparelho trava.
